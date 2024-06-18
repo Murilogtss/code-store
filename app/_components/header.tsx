@@ -1,7 +1,10 @@
+"use client";
+
 import {
   HomeIcon,
   ListOrderedIcon,
   LogInIcon,
+  LogOutIcon,
   MenuIcon,
   PercentIcon,
   ShoppingCartIcon,
@@ -15,8 +18,21 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Separator } from "./ui/separator";
 
 const Header = () => {
+  const handleLogIn = async () => {
+    await signIn("google");
+  };
+
+  const handleLogOut = async () => {
+    await signOut();
+  };
+
+  const { data, status } = useSession();
+
   return (
     <Card className="flex p-[1.875rem] rounded-none justify-between items-center">
       <Sheet>
@@ -32,11 +48,43 @@ const Header = () => {
             </SheetTitle>
           </SheetHeader>
 
-          <div className="mt-2 flex flex-col gap-2">
-            <Button variant="outline" className="w-full justify-start gap-2">
-              <LogInIcon size={16} />
-              Fazer Login
-            </Button>
+          {status == "authenticated" && data.user && (
+            <>
+              <div className="flex items-center gap-2 py-4">
+                <Avatar>
+                  <AvatarFallback>
+                    {data.user.name?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                  {data.user.image && <AvatarImage src={data.user.image} />}
+                </Avatar>
+                <div className="flex flex-col">
+                  <p className="font-medium">{data.user.name}</p>
+                  <span className="text-sm opacity-75">Boas compras!</span>
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
+          <div className="flex flex-col gap-2 mt-4">
+            {status == "unauthenticated" ? (
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2"
+                onClick={handleLogIn}
+              >
+                <LogInIcon size={16} />
+                Fazer Login
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2"
+                onClick={handleLogOut}
+              >
+                <LogOutIcon size={16} />
+                Fazer Logout
+              </Button>
+            )}
             <Button variant="outline" className="w-full justify-start gap-2">
               <HomeIcon size={16} />
               Inicio
